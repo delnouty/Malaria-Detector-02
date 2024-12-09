@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="fr" class="h-full bg-gray-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Malaria Detector - Diagnostic assisté par IA</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        medical: {
+                            light: '#E3F2FD',
+                            DEFAULT: '#2196F3',
+                            dark: '#1976D2'
+                        }
+                    }
+                }
+            }
+        }
+
+        function previewImage(event) {
+            const output = document.getElementById('preview');
+            const dropZone = document.getElementById('drop-zone');
+            const previewContainer = document.getElementById('preview-container');
+            const uploadIcon = document.getElementById('upload-icon');
+            const file = event.target.files[0];
+            
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function() {
+                    output.src = reader.result;
+                    previewContainer.classList.remove('hidden');
+                    uploadIcon.classList.add('hidden');
+                    dropZone.classList.add('border-medical');
+                    dropZone.classList.add('bg-medical-light');
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+    </script>
+</head>
+<body class="h-full bg-gradient-to-br from-gray-50 to-medical-light">
+    <!-- Notifications -->
+    <div class="fixed top-4 right-4 z-50" id="notifications">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="notification mb-4 p-4 rounded-lg shadow-lg max-w-md transform transition-all duration-300 ease-in-out
+                        {% if category == 'error' %}
+                            bg-red-50 text-red-800 border-l-4 border-red-500
+                        {% else %}
+                            bg-green-50 text-green-800 border-l-4 border-green-500
+                        {% endif %}">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                {% if category == 'error' %}
+                                    <i class="fas fa-exclamation-circle text-red-400"></i>
+                                {% else %}
+                                    <i class="fas fa-check-circle text-green-400"></i>
+                                {% endif %}
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm font-medium">{{ message }}</p>
+                            </div>
+                            <div class="ml-auto pl-3">
+                                <div class="-mx-1.5 -my-1.5">
+                                    <button onclick="this.parentElement.parentElement.parentElement.remove()" 
+                                            class="inline-flex rounded-md p-1.5 
+                                            {% if category == 'error' %}
+                                                text-red-500 hover:bg-red-100
+                                            {% else %}
+                                                text-green-500 hover:bg-green-100
+                                            {% endif %}">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <div class="min-h-full">
+        <!-- Navigation -->
+        <nav class="bg-white shadow-sm">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between h-16">
+                    <div class="flex items-center">
+                        <i class="fas fa-microscope text-medical text-2xl mr-2"></i>
+                        <div>
+                            <span class="text-xl font-semibold text-gray-800">Malaria Detector</span>
+                            <span class="text-xs block text-medical-dark">Diagnostic assisté par IA</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="pb-16">
+            <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+                <div class="px-4 py-6 sm:px-0">
+                    <div class="max-w-xl mx-auto">
+                        <!-- Info Card -->
+                        <div class="bg-white rounded-lg shadow-xl p-6 mb-6">
+                            <div class="flex items-center mb-4">
+                                <i class="fas fa-info-circle text-medical mr-2"></i>
+                                <h3 class="text-lg font-semibold text-gray-800">À propos de l'analyse</h3>
+                            </div>
+                            <p class="text-sm text-gray-600">
+                                Notre système d'IA analyse les images microscopiques de frottis sanguins pour détecter la présence de parasites du paludisme. Téléchargez une image claire de votre échantillon pour obtenir une analyse rapide et précise.
+                            </p>
+                        </div>
+
+                        <!-- Upload Card -->
+                        <div class="bg-white rounded-lg shadow-xl p-8">
+                            <h2 class="text-2xl font-bold text-center text-gray-800 mb-4">
+                                Analyse d'échantillon
+                            </h2>
+                            <p class="text-center text-gray-600 mb-8">
+                                Téléchargez une image microscopique de frottis sanguin
+                            </p>
+                            
+                            <form method="post" enctype="multipart/form-data" class="space-y-6">
+                                <div id="drop-zone" class="relative border-2 border-dashed border-gray-300 rounded-lg p-8 text-center transition-all duration-200 ease-in-out hover:border-medical hover:bg-medical-light">
+                                    <input type="file" 
+                                           name="file" 
+                                           class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                           onchange="previewImage(event)"
+                                           accept="image/*">
+                                    
+                                    <div id="upload-icon" class="space-y-2">
+                                        <i class="fas fa-microscope text-4xl text-medical"></i>
+                                        <div class="text-gray-600">
+                                            <span class="font-medium">Sélectionnez une image</span> ou glissez-la ici
+                                        </div>
+                                        <p class="text-xs text-gray-500">
+                                            Format acceptés : PNG, JPG, JPEG, GIF
+                                        </p>
+                                    </div>
+                                    
+                                    <div id="preview-container" class="hidden">
+                                        <img id="preview" class="mt-4 mx-auto max-h-48 rounded-lg shadow-md" />
+                                        <p class="mt-2 text-sm text-gray-500">Image sélectionnée</p>
+                                    </div>
+                                </div>
+
+                                <button type="submit" 
+                                        class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-medical hover:bg-medical-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-medical transition-colors duration-200">
+                                    <i class="fas fa-search-plus mr-2"></i>
+                                    Analyser l'échantillon
+                                </button>
+                            </form>
+
+                            <div class="mt-6 text-center text-xs text-gray-600">
+                                <p>Pour de meilleurs résultats, utilisez des images nettes et bien éclairées</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="bg-white fixed bottom-0 w-full">
+            <div class="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
+                <p class="text-center text-sm text-gray-500">
+                    Malaria Detector - Diagnostic assisté par intelligence artificielle
+                </p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Ajouter ce script à la fin du body -->
+    <script>
+        // Attendre que le DOM soit complètement chargé
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialiser les gestionnaires d'événements de la modale
+            const modal = document.getElementById('resultModal');
+            const closeModalBtn = document.getElementById('closeModal');
+
+            if (closeModalBtn) {
+                closeModalBtn.addEventListener('click', function() {
+                    modal.classList.add('hidden');
+                });
+            }
+
+            if (modal) {
+                modal.addEventListener('click', function(e) {
+                    if (e.target === this) {
+                        this.classList.add('hidden');
+                    }
+                });
+            }
+
+            // Gérer les notifications existantes
+            setTimeout(function() {
+                const notifications = document.querySelectorAll('.notification');
+                notifications.forEach(notification => {
+                    notification.style.opacity = '0';
+                    setTimeout(() => notification.remove(), 300);
+                });
+            }, 5000);
+
+            // Gestionnaire du formulaire
+            const form = document.querySelector('form');
+            if (form) {
+                form.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    const fileInput = document.querySelector('input[type="file"]');
+                    
+                    if (!fileInput.files.length) {
+                        showNotification('Veuillez sélectionner une image à analyser.', 'error');
+                        return;
+                    }
+
+                    // Afficher l'indicateur de chargement
+                    const loadingNotification = showNotification('Analyse en cours...', 'loading');
+
+                    const formData = new FormData(this);
+                    
+                    try {
+                        const response = await fetch('/', {
+                            method: 'POST',
+                            body: formData
+                        });
+                        
+                        if (!response.ok) {
+                            throw new Error(`Erreur HTTP: ${response.status}`);
+                        }
+                        
+                        const result = await response.json();
+                        
+                        // Supprimer la notification de chargement
+                        loadingNotification.remove();
+                        
+                        if (result.error) {
+                            throw new Error(result.error);
+                        }
+
+                        // Afficher les résultats dans la modale
+                        showResults(result);
+                    } catch (error) {
+                        console.error('Erreur:', error);
+                        loadingNotification.remove();
+                        showNotification(error.message, 'error');
+                    }
+                });
+            }
+        });
+
+        // Fonction utilitaire pour afficher les notifications
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            let className = 'notification mb-4 p-4 rounded-lg shadow-lg max-w-md ';
+            let icon = '';
+            
+            switch(type) {
+                case 'error':
+                    className += 'bg-red-50 text-red-800 border-l-4 border-red-500';
+                    icon = 'exclamation-circle';
+                    break;
+                case 'loading':
+                    className += 'bg-blue-50 text-blue-800 border-l-4 border-blue-500';
+                    icon = 'spinner fa-spin';
+                    break;
+                default:
+                    className += 'bg-green-50 text-green-800 border-l-4 border-green-500';
+                    icon = 'check-circle';
+            }
+            
+            notification.className = className;
+            notification.innerHTML = `
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-${icon} ${type === 'error' ? 'text-red-400' : type === 'loading' ? 'text-blue-400' : 'text-green-400'}"></i>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm font-medium">${message}</p>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('notifications').appendChild(notification);
+            
+            if (type !== 'loading') {
+                setTimeout(() => {
+                    notification.style.opacity = '0';
+                    setTimeout(() => notification.remove(), 300);
+                }, 5000);
+            }
+            
+            return notification;
+        }
+
+        // Fonction pour afficher les résultats dans la modale
+        function showResults(result) {
+            const modal = document.getElementById('resultModal');
+            const icon = document.getElementById('resultIcon');
+            const title = document.getElementById('resultTitle');
+            const details = document.getElementById('resultDetails');
+            const probabilityBar = document.getElementById('probabilityBar');
+            
+            if (result.status === 'positive') {
+                icon.className = 'fas fa-exclamation-circle text-red-500';
+                probabilityBar.className = 'h-2.5 rounded-full bg-red-500';
+            } else {
+                icon.className = 'fas fa-check-circle text-green-500';
+                probabilityBar.className = 'h-2.5 rounded-full bg-green-500';
+            }
+            
+            title.textContent = result.prediction;
+            details.textContent = `H0-probabilité : ${result.probability}%`;
+            probabilityBar.style.width = `${result.probability}%`;
+            
+            modal.classList.remove('hidden');
+        }
+    </script>
+
+    <!-- Modal -->
+    <div id="resultModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="mt-3 text-center">
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full mb-4">
+                    <i id="resultIcon" class="text-4xl"></i>
+                </div>
+                <h3 class="text-lg leading-6 font-medium text-gray-900" id="resultTitle"></h3>
+                <div class="mt-2 px-7 py-3">
+                    <p class="text-sm text-gray-500" id="resultDetails"></p>
+                </div>
+                <!-- Progress Bar -->
+                <div class="w-full bg-gray-200 rounded-full h-2.5 mb-4">
+                    <div id="probabilityBar" class="h-2.5 rounded-full transition-all duration-500"></div>
+                </div>
+                <div class="items-center px-4 py-3">
+                    <button id="closeModal" class="px-4 py-2 bg-medical text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-medical-dark focus:outline-none focus:ring-2 focus:ring-medical">
+                        Fermer
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
