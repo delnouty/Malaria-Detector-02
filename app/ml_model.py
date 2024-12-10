@@ -35,8 +35,8 @@ class MalariaDetector:
             
             result = {
                 'probability': round(probability * 100, 2),
-                'prediction': 'Pas de paludisme détecté' if probability > 0.5 else 'Paludisme détecté',
-                'status': 'negative' if probability > 0.5 else 'positive'
+                'prediction': 'Paludisme détecté' if probability > 0.5 else 'Pas de paludisme détecté',
+                'status': 'positive' if probability > 0.5 else 'negative'
             }
             return result
         except Exception as e:
